@@ -8,7 +8,7 @@ package org.zozuar.volumetrics {
 		// When true a blur filter is applied to the final effect bitmap (can help when colorIntegrity == true).
 		public var blur:Boolean = false;
 		// Selects rendering method; when set to true colors won't be distorted and performance will be
-		// slightly worse. Also, this might make the final output appear grainier.
+		// a little worse. Also, this might make the final output appear grainier.
 		public var colorIntegrity:Boolean = false;
 		// Light intensity.
 		public var intensity:Number = 4;
@@ -29,7 +29,7 @@ package org.zozuar.volumetrics {
 		protected var _occlusion:DisplayObject;
 		protected var _emissionBmd:BitmapData;
 		protected var _ct:ColorTransform = new ColorTransform;
-		protected var halve:ColorTransform = new ColorTransform(0.5, 0.5, 0.5);
+		protected var _halve:ColorTransform = new ColorTransform(0.5, 0.5, 0.5);
 		protected var _occlusionBmd:BitmapData;
 		protected var _occlusionBmp:Bitmap;
 		protected var _buffBmd:BitmapData;
@@ -123,7 +123,7 @@ package org.zozuar.volumetrics {
 		protected function _applyEffect(src:BitmapData, buff:BitmapData, mtx:Matrix, passes:uint):BitmapData {
 			var tmp:BitmapData;
 			while(passes--) {
-				if(colorIntegrity) src.colorTransform(src.rect, halve);
+				if(colorIntegrity) src.colorTransform(src.rect, _halve);
 				buff.copyPixels(src, src.rect, src.rect.topLeft);
 				buff.draw(src, mtx, null, BlendMode.ADD, null, true);
 				mtx.concat(mtx);
