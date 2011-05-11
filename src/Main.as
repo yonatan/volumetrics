@@ -43,7 +43,6 @@ package {
 			emission.x = occlusion.x = 400;
 			emission.y = occlusion.y = 300;
 			fx = new EffectContainer(800, 600, emission, occlusion);
-			fx.setBufferSize(0x8000);
 			addChild(fx);
 
 			// ui
@@ -56,6 +55,8 @@ package {
 			slider(0, 20, fx, "intensity");
 			slider(1, 10, fx, "scale");
 			checkbox(fx, "smoothing");
+			checkbox(fx, "blur");
+			checkbox(fx, "colorIntegrity");
 			checkbox(this, "attachEmissionToSrc", "Drag emitter with light source");
 			checkbox(this, "moveOcclusion");
 			checkbox(emission, "visible", "emission.visible");
@@ -64,6 +65,13 @@ package {
 					emission.x = src.x = stage.stageWidth/2;
 					emission.y = src.y = stage.stageHeight/2;
 				})
+			var sizeSlider:HUISlider = new HUISlider(box, 0, 0, "Buffer size", function(e:Event):void { 
+					fx.setBufferSize(sizeSlider.value);
+				});
+			sizeSlider.tick = 0x400;
+			sizeSlider.minimum = 0x400;
+			sizeSlider.maximum = 0x20000;
+			sizeSlider.value = 0x8000;
 					
 
 			// light source icon
@@ -97,10 +105,9 @@ package {
 		}
 
 		private function slider(min:Number, max:Number, obj:Object, prop:String, text:String = null):HUISlider {
-			var hb:HBox = new HBox(box);
 			var comp:HUISlider;
 			function handler(e:*):void { obj[prop] = comp.value; }
-			comp = new HUISlider(hb, 0, 0, text || prop, handler);
+			comp = new HUISlider(box, 0, 0, text || prop, handler);
 			comp.tick = 0.001;
 			comp.minimum = min;
 			comp.maximum = max;
