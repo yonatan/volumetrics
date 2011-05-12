@@ -31,11 +31,11 @@ package org.zozuar.volumetrics {
 		protected var _blurFilter:BlurFilter = new BlurFilter(2, 2);
 		protected var _emission:DisplayObject;
 		protected var _occlusion:DisplayObject;
-		protected var _emissionBmd:BitmapData;
 		protected var _ct:ColorTransform = new ColorTransform;
 		protected var _halve:ColorTransform = new ColorTransform(0.5, 0.5, 0.5);
-		protected var _occlusionBmd:BitmapData;
-		protected var _occlusionBmp:Bitmap;
+		protected var _occlusionLoResBmd:BitmapData;
+		protected var _occlusionLoResBmp:Bitmap;
+		protected var _baseBmd:BitmapData;
 		protected var _bufferBmd:BitmapData;
 		protected var _lightBmp:Bitmap = new Bitmap;
 		protected var _bufferSize:uint = 0x8000;
@@ -75,10 +75,10 @@ package org.zozuar.volumetrics {
 			_bufferHeight = Math.max(1, Math.sqrt(_bufferSize / aspect));
 			_bufferWidth  = Math.max(1, _bufferHeight * aspect);
 			dispose();
-			_emissionBmd  = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
-			_bufferBmd    = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
-			_occlusionBmd = new BitmapData(_bufferWidth, _bufferHeight, true, 0);
-			_occlusionBmp = new Bitmap(_occlusionBmd);
+			_baseBmd           = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
+			_bufferBmd         = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
+			_occlusionLoResBmd = new BitmapData(_bufferWidth, _bufferHeight, true, 0);
+			_occlusionLoResBmp = new Bitmap(_occlusionLoResBmd);
 		}
 
 		// Render a single frame.
@@ -89,14 +89,14 @@ package org.zozuar.volumetrics {
 			m.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
 			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
 			_ct.redMultiplier = _ct.greenMultiplier = _ct.blueMultiplier = mul;
-			_emissionBmd.fillRect(_emissionBmd.rect, 0);
-			_emissionBmd.draw(_emission, m, colorIntegrity ? null : _ct);
+			_baseBmd.fillRect(_baseBmd.rect, 0);
+			_baseBmd.draw(_emission, m, colorIntegrity ? null : _ct);
 			if(_occlusion) {
-				_occlusionBmd.fillRect(_occlusionBmd.rect, 0);
+				_occlusionLoResBmd.fillRect(_occlusionLoResBmd.rect, 0);
 				m = _occlusion.transform.matrix.clone();
 				m.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
-				_occlusionBmd.draw(_occlusion, m);
-				_emissionBmd.draw(_occlusionBmp, null, null, BlendMode.ERASE);
+				_occlusionLoResBmd.draw(_occlusion, m);
+				_baseBmd.draw(_occlusionLoResBmp, null, null, BlendMode.ERASE);
 			}
 			if(rasterQuality) stage.quality = savedQuality;
 			var s:Number = 1 + (scale-1) / (1 << passes);
@@ -106,7 +106,7 @@ package org.zozuar.volumetrics {
 			m.translate(-tx, -ty);
 			m.scale(s, s);
 			m.translate(tx, ty);
-			_lightBmp.bitmapData = _applyEffect(_emissionBmd, _bufferBmd, m, passes);
+			_lightBmp.bitmapData = _applyEffect(_baseBmd, _bufferBmd, m, passes);
 			_lightBmp.width = _viewportWidth;
 			_lightBmp.height = _viewportHeight;
 			_lightBmp.smoothing = smoothing;
@@ -141,10 +141,10 @@ package org.zozuar.volumetrics {
 
 		// Dispose of all intermediate buffers. After calling this the EffectContainer object will be unusable.
 		public function dispose():void {
-			if(_emissionBmd) _emissionBmd.dispose();
-			if(_occlusionBmd) _occlusionBmd.dispose();
+			if(_baseBmd) _baseBmd.dispose();
+			if(_occlusionLoResBmd) _occlusionLoResBmd.dispose();
 			if(_bufferBmd) _bufferBmd.dispose();
-			_emissionBmd = _occlusionBmd = _bufferBmd = _lightBmp.bitmapData = null;
+			_baseBmd = _occlusionLoResBmd = _bufferBmd = _lightBmp.bitmapData = null;
 		}
     }
 }
