@@ -32,7 +32,7 @@ package org.zozuar.volumetrics {
 		protected var _halve:ColorTransform = new ColorTransform(0.5, 0.5, 0.5);
 		protected var _occlusionBmd:BitmapData;
 		protected var _occlusionBmp:Bitmap;
-		protected var _buffBmd:BitmapData;
+		protected var _bufferBmd:BitmapData;
 		protected var _lightBmp:Bitmap = new Bitmap;
 		protected var _bufferSize:uint = 0x8000;
 		protected var _bufferWidth:uint;
@@ -49,7 +49,8 @@ package org.zozuar.volumetrics {
 			addChild(_lightBmp);
 		}
 
-		// Sets the container's size (in pixels).
+		// Sets the container's size (in pixels). This method recreates internal buffers (slow), do not
+		// call this on every frame.
 		public function setViewportSize(width:uint, height:uint):void {
 			_viewportWidth = width;
 			_viewportHeight = height;
@@ -58,7 +59,8 @@ package org.zozuar.volumetrics {
 		}
 
 		// Sets the approximate size (in pixels) of the effect's internal buffers. Smaller number means lower
-		// quality and better performance.
+		// quality and better performance. This method recreates internal buffers (slow), do not call this on 
+		// every frame.
 		public function setBufferSize(size:uint):void {
 			_bufferSize = size;
 			_updateBuffers();
@@ -70,7 +72,7 @@ package org.zozuar.volumetrics {
 			_bufferWidth  = Math.max(1, _bufferHeight * aspect);
 			dispose();
 			_emissionBmd  = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
-			_buffBmd      = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
+			_bufferBmd    = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
 			_occlusionBmd = new BitmapData(_bufferWidth, _bufferHeight, true, 0);
 			_occlusionBmp = new Bitmap(_occlusionBmd);
 		}
@@ -99,7 +101,7 @@ package org.zozuar.volumetrics {
 			m.translate(-tx, -ty);
 			m.scale(s, s);
 			m.translate(tx, ty);
-			_lightBmp.bitmapData = _applyEffect(_emissionBmd, _buffBmd, m, passes);
+			_lightBmp.bitmapData = _applyEffect(_emissionBmd, _bufferBmd, m, passes);
 			_lightBmp.width = _viewportWidth;
 			_lightBmp.height = _viewportHeight;
 			_lightBmp.smoothing = smoothing;
@@ -116,17 +118,17 @@ package org.zozuar.volumetrics {
 			removeEventListener(Event.ENTER_FRAME, render);
 		}
 
-		// Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buff
-		// bitmaps. src and buff must be the same size. The bitmap with final output (either src or buff) is 
+		// Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buffer
+		// bitmaps. src and buffer must be the same size. The bitmap with final output (either src or buffer) is 
 		// returned.
-		protected function _applyEffect(src:BitmapData, buff:BitmapData, mtx:Matrix, passes:uint):BitmapData {
+		protected function _applyEffect(src:BitmapData, buffer:BitmapData, mtx:Matrix, passes:uint):BitmapData {
 			var tmp:BitmapData;
 			while(passes--) {
 				if(colorIntegrity) src.colorTransform(src.rect, _halve);
-				buff.copyPixels(src, src.rect, src.rect.topLeft);
-				buff.draw(src, mtx, null, BlendMode.ADD, null, true);
+				buffer.copyPixels(src, src.rect, src.rect.topLeft);
+				buffer.draw(src, mtx, null, BlendMode.ADD, null, true);
 				mtx.concat(mtx);
-				tmp = src; src = buff; buff = tmp;
+				tmp = src; src = buffer; buffer = tmp;
 			}
 			if(colorIntegrity) src.colorTransform(src.rect, _ct);
 			if(blur) src.applyFilter(src, src.rect, src.rect.topLeft, _blurFilter);
@@ -137,8 +139,8 @@ package org.zozuar.volumetrics {
 		public function dispose():void {
 			if(_emissionBmd) _emissionBmd.dispose();
 			if(_occlusionBmd) _occlusionBmd.dispose();
-			if(_buffBmd) _buffBmd.dispose();
-			_emissionBmd = _occlusionBmd = _buffBmd = _lightBmp.bitmapData = null;
+			if(_bufferBmd) _bufferBmd.dispose();
+			_emissionBmd = _occlusionBmd = _bufferBmd = _lightBmp.bitmapData = null;
 		}
     }
 }
