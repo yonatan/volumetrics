@@ -12,10 +12,14 @@ package org.zozuar.volumetrics {
 		public var colorIntegrity:Boolean = false;
 		// Light intensity.
 		public var intensity:Number = 4;
-		// Number of passes applied to buffer. Lower numbers means lower quality but better performance, 
+		// Number of passes applied to buffer. Lower numbers mean lower quality but better performance, 
 		// anything above 8 is probably overkill.
 		public var passes:uint = 6;
-		// Final scale of emission, higher number means wider light angle. Should always be more than 1.
+		// Set this to one of the StageQuality constants to use this quality level when drawing bitmaps,
+		// or to null to use the current stage quality. Mileage may vary on different platforms and player versions.
+		// I think it should only be used when stage.quality is LOW (set this to BEST to get reasonable results).
+		public var rasterQuality:String = null;
+		// Final scale of emission. Should always be more than 1.
 		public var scale:Number = 2;
 		// Smooth scaling of the effect's final output bitmap.
 		public var smoothing:Boolean = true;
@@ -79,8 +83,8 @@ package org.zozuar.volumetrics {
 
 		// Render a single frame.
 		public function render(e:Event = null):void {
-			var quality:String = stage.quality;
-			stage.quality = StageQuality.BEST;
+			var savedQuality:String = stage.quality;
+			if(rasterQuality) stage.quality = rasterQuality;
 			var m:Matrix = _emission.transform.matrix.clone();
 			m.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
 			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
@@ -94,6 +98,7 @@ package org.zozuar.volumetrics {
 				_occlusionBmd.draw(_occlusion, m);
 				_emissionBmd.draw(_occlusionBmp, null, null, BlendMode.ERASE);
 			}
+			if(rasterQuality) stage.quality = savedQuality;
 			var s:Number = 1 + (scale-1) / (1 << passes);
 			var tx:Number = srcX/_viewportWidth*_bufferWidth;
 			var ty:Number = srcY/_viewportHeight*_bufferHeight;
@@ -105,7 +110,6 @@ package org.zozuar.volumetrics {
 			_lightBmp.width = _viewportWidth;
 			_lightBmp.height = _viewportHeight;
 			_lightBmp.smoothing = smoothing;
-			stage.quality = quality;
 		}
 
 		// Render effect on every frame until stopRendering is called.

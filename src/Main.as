@@ -6,6 +6,7 @@ package {
 	import flash.filters.*;
 	import org.zozuar.volumetrics.*;
 	import com.bit101.components.*;
+	import net.hires.debug.Stats;
 
 	[SWF(width="800", height="600", backgroundColor="0", frameRate="100")]
 	public class Main extends Sprite {
@@ -13,7 +14,7 @@ package {
 		private var emission:Sprite = new Sprite;
 		private var occlusion:Sprite = new Sprite;
 		private var box:VBox;
-		private var moveOcclusion:Boolean = true;
+		private var moveOcclusion:Boolean = false;
 		private var src:SunIcon = new SunIcon;
 		private var attachEmissionToSrc:Boolean = true;
 
@@ -36,7 +37,8 @@ package {
 			g.clear();
 			g.beginFill(0x101010);
 			for(var i:int = 0; i < 10; i++) {
-				g.drawRect(-400/(i+1), -300/(i+1), 800/(i+1), 600/(i+1));
+				//g.drawRect(-400/(i+1), -300/(i+1), 800/(i+1), 600/(i+1));
+				g.drawRect(-200/(i+1), -150/(i+1), 400/(i+1), 300/(i+1));
 			}
 			g.endFill();
 
@@ -72,7 +74,10 @@ package {
 			sizeSlider.minimum = 0x400;
 			sizeSlider.maximum = 0x20000;
 			sizeSlider.value = 0x8000;
-					
+
+			var stats:Stats = new Stats;
+			addChild(stats);
+			stats.x = stage.stageWidth - stats.width;
 
 			// light source icon
 			stage.addChild(src);
