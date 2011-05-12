@@ -56,7 +56,7 @@ def read_to_prompt(f)
   output
 end
 
-fcsh = IO.popen("/home/yonatan/lib/flex4/bin/fcsh 2>&1", "w+")
+fcsh = IO.popen("fcsh 2>&1", "w+")
 read_to_prompt(fcsh)
 fcsh.puts COMPILE_COMMAND
 read_to_prompt(fcsh)
