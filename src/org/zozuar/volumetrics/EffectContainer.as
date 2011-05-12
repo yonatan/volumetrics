@@ -68,7 +68,6 @@ package org.zozuar.volumetrics {
 			var aspect:Number = _viewportWidth / _viewportHeight;
 			_bufferHeight = Math.max(1, Math.sqrt(_bufferSize / aspect));
 			_bufferWidth  = Math.max(1, _bufferHeight * aspect);
-			_bufferSize = _bufferWidth * _bufferHeight;
 			dispose();
 			_emissionBmd  = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
 			_buffBmd      = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
