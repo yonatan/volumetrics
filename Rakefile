@@ -25,7 +25,7 @@ SWC_OPTIONS = [
               ]
 
 task :doc => VOLUMETRICS_SRC_FILES do
-  rm_r "./doc" rescue nil
+  rm_r Dir.glob("./doc/*")
   sh "#{ASDOC} -output doc -source-path src -doc-sources src/org/zozuar/volumetrics/"
 end
 
@@ -43,6 +43,6 @@ task :examples => [SWC_TARGET] do
 end
 
 task :clean do
-  rm_r "./doc" rescue nil
-  rm "./bin/*" rescue nil
+  rm_r Dir.glob("./doc/*")
+  rm Dir.glob("./bin/*")
 end
