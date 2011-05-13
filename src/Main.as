@@ -16,13 +16,13 @@ package {
 		private var box:VBox;
 		private var moveOcclusion:Boolean = false;
 		private var src:SunIcon = new SunIcon;
-		private var attachEmissionToSrc:Boolean = true;
+		private var attachEmissionToSrc:Boolean = false;
 
 		public function Main():void {
 			addEventListener(Event.ADDED_TO_STAGE, init);
 		}
 
-		private  function init(e:Event = null):void {
+		private function init(e:Event = null):void {
 			var g:Graphics;
 			stage.quality = "medium";
 

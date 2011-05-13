@@ -4,28 +4,52 @@ package org.zozuar.volumetrics {
     import flash.filters.*;
     import flash.geom.*;
 
-    public class EffectContainer extends Sprite {
-		// When true a blur filter is applied to the final effect bitmap (can help when colorIntegrity == true).
+	/**
+	* The EffectContainer class creates a volumetric light effect (also known as crepuscular or "god" rays).
+	* This is done in 2D with some bitmap processing of an emission object, and optionally an occlusion object.
+	*/
+	public class EffectContainer extends Sprite {
+		/**
+		* When true a blur filter is applied to the final effect bitmap (can help when colorIntegrity == true).
+		*/
 		public var blur:Boolean = false;
-		// Selects rendering method; when set to true colors won't be distorted and performance will be
-		// a little worse. Also, this might make the final output appear grainier.
+		/**
+		* Selects rendering method; when set to true colors won't be distorted and performance will be
+		* a little worse. Also, this might make the final output appear grainier.
+		*/
 		public var colorIntegrity:Boolean = false;
-		// Light intensity.
+		/**
+		* Light intensity.
+		*/
 		public var intensity:Number = 4;
-		// Number of passes applied to buffer. Lower numbers mean lower quality but better performance, 
-		// anything above 8 is probably overkill.
+		/**
+		* Number of passes applied to buffer. Lower numbers mean lower quality but better performance,
+		* anything above 8 is probably overkill.
+		*/
 		public var passes:uint = 6;
-		// Set this to one of the StageQuality constants to use this quality level when drawing bitmaps,
-		// or to null to use the current stage quality. Mileage may vary on different platforms and player versions.
-		// I think it should only be used when stage.quality is LOW (set this to BEST to get reasonable results).
+		/**
+		* Set this to one of the StageQuality constants to use this quality level when drawing bitmaps, or to
+		* null to use the current stage quality. Mileage may vary on different platforms and player versions.
+		* I think it should only be used when stage.quality is LOW (set this to BEST to get reasonable results).
+		*/
 		public var rasterQuality:String = null;
-		// Final scale of emission. Should always be more than 1.
+		/**
+		* Final scale of emission. Should always be more than 1.
+		*/
 		public var scale:Number = 2;
-		// Smooth scaling of the effect's final output bitmap.
+		/**
+		* Smooth scaling of the effect's final output bitmap.
+		*/
 		public var smoothing:Boolean = true;
-		// Light source x
+		/**
+		* Light source x.
+		* @default viewport center (set in constructor).
+		*/
 		public var srcX:Number;
-		// Light source y
+		/**
+		* Light source y.
+		* @default viewport center (set in constructor).
+		*/
 		public var srcY:Number;
 
 		protected var _blurFilter:BlurFilter = new BlurFilter(2, 2);
@@ -43,7 +67,18 @@ package org.zozuar.volumetrics {
 		protected var _bufferHeight:uint;
 		protected var _viewportWidth:uint;
 		protected var _viewportHeight:uint;
-		
+
+		/**
+		* Creates a new effect container.
+		*
+		* @param width Viewport width in pixels.
+		* @param height Viewport height in pixels.
+		* @param emission A DisplayObject to which the effect will be applied. This object will be
+		* added as a child of the container. When applying the effect the object's filters and color
+		* matrix is ignored, if you want to use filters or a color matrix put your content in another
+		* object and addChild it to this one instead.
+		* @param occlusion An optional occlusion object, handled the same way as the emission object.
+		*/
 		public function EffectContainer(width:uint, height:uint, emission:DisplayObject, occlusion:DisplayObject = null) {
 			if(!emission) throw(new Error("emission DisplayObject must not be null."));
 			addChild(_emission = emission);
@@ -51,10 +86,17 @@ package org.zozuar.volumetrics {
 			setViewportSize(width, height);
 			_lightBmp.blendMode = BlendMode.ADD;
 			addChild(_lightBmp);
+			srcX = width / 2;
+			srcY = height / 2;
 		}
 
-		// Sets the container's size (in pixels). This method recreates internal buffers (slow), do not
-		// call this on every frame.
+		/**
+		* Sets the container's size. This method recreates internal buffers (slow), do not call this on
+		* every frame.
+		*
+		* @param width Viewport width in pixels
+		* @param height Viewport height in pixels
+		*/
 		public function setViewportSize(width:uint, height:uint):void {
 			_viewportWidth = width;
 			_viewportHeight = height;
@@ -62,9 +104,13 @@ package org.zozuar.volumetrics {
 			_updateBuffers();
 		}
 
-		// Sets the approximate size (in pixels) of the effect's internal buffers. Smaller number means lower
-		// quality and better performance. This method recreates internal buffers (slow), do not call this on 
-		// every frame.
+		/**
+		* Sets the approximate size (in pixels) of the effect's internal buffers. Smaller number means lower
+		* quality and better performance. This method recreates internal buffers (slow), do not call this on
+		* every frame.
+		*
+		* @param size Buffer size in pixels
+		*/
 		public function setBufferSize(size:uint):void {
 			_bufferSize = size;
 			_updateBuffers();
@@ -81,7 +127,11 @@ package org.zozuar.volumetrics {
 			_occlusionLoResBmp = new Bitmap(_occlusionLoResBmd);
 		}
 
-		// Render a single frame.
+		/**
+		* Render a single frame.
+		*
+		* @param e In case you want to make this an event listener.
+		*/
 		public function render(e:Event = null):void {
 			var savedQuality:String = stage.quality;
 			if(rasterQuality) stage.quality = rasterQuality;
@@ -112,19 +162,30 @@ package org.zozuar.volumetrics {
 			_lightBmp.smoothing = smoothing;
 		}
 
-		// Render effect on every frame until stopRendering is called.
+		/**
+		* Render effect on every frame until stopRendering is called.
+		*/
 		public function startRendering():void {
 			addEventListener(Event.ENTER_FRAME, render);
 		}
 
-		// Stop rendering on every frame.
+		/**
+		* Stop rendering on every frame.
+		*/
 		public function stopRendering():void {
 			removeEventListener(Event.ENTER_FRAME, render);
 		}
 
-		// Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buffer
-		// bitmaps. src and buffer must be the same size. The bitmap with final output (either src or buffer) is 
-		// returned.
+		/**
+		* Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buffer
+		* bitmaps.
+		*
+		* @param src The BitmapData to apply the effect on.
+		* @param buffer Another BitmapData object for temporary storage. Must be the same size as src.
+		* @param mtx Effect matrix.
+		* @param passes Number of passes to make.
+		* @return A processed BitmapData object (supllied in either src or buffer) with final effect output.
+		*/
 		protected function _applyEffect(src:BitmapData, buffer:BitmapData, mtx:Matrix, passes:uint):BitmapData {
 			var tmp:BitmapData;
 			while(passes--) {
@@ -139,7 +200,9 @@ package org.zozuar.volumetrics {
 			return src;
 		}
 
-		// Dispose of all intermediate buffers. After calling this the EffectContainer object will be unusable.
+		/**
+		* Dispose of all intermediate buffers. After calling this the EffectContainer object will be unusable.
+		*/
 		public function dispose():void {
 			if(_baseBmd) _baseBmd.dispose();
 			if(_occlusionLoResBmd) _occlusionLoResBmd.dispose();
