@@ -163,7 +163,7 @@ package org.zozuar.volumetrics {
 		}
 
 		/**
-		* Render effect on every frame until stopRendering is called.
+		* Render the effect on every frame until stopRendering is called.
 		*/
 		public function startRendering():void {
 			addEventListener(Event.ENTER_FRAME, render);

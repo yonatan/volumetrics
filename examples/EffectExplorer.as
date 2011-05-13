@@ -9,7 +9,7 @@ package {
 	import net.hires.debug.Stats;
 
 	[SWF(width="800", height="600", backgroundColor="0", frameRate="100")]
-	public class Main extends Sprite {
+	public class EffectExplorer extends Sprite {
 		private var fx:EffectContainer;
 		private var emission:Sprite = new Sprite;
 		private var occlusion:Sprite = new Sprite;
@@ -17,14 +17,19 @@ package {
 		private var moveOcclusion:Boolean = false;
 		private var src:SunIcon = new SunIcon;
 		private var attachEmissionToSrc:Boolean = false;
+		private var stats:Stats = new Stats;
 
-		public function Main():void {
+		public function EffectExplorer():void {
 			addEventListener(Event.ADDED_TO_STAGE, init);
+			if(null != stage) init();
 		}
 
 		private function init(e:Event = null):void {
+			removeEventListener(Event.ADDED_TO_STAGE, init);
 			var g:Graphics;
 			stage.quality = "medium";
+			stage.align = "TL";
+			stage.scaleMode = "noScale";
 
 			g = emission.graphics;
 			g.clear();
@@ -42,8 +47,6 @@ package {
 			}
 			g.endFill();
 
-			emission.x = occlusion.x = 400;
-			emission.y = occlusion.y = 300;
 			fx = new EffectContainer(800, 600, emission, occlusion);
 			addChild(fx);
 
@@ -51,7 +54,7 @@ package {
 			box = new VBox(this, 15, 15);
 			box.opaqueBackground = 0xe0e0e0;
 			//box.filters = [new GlowFilter(0, 1, 10, 10)];
-			new FPSMeter(box);
+			//new FPSMeter(box);
 			new Label(box, 0, 0, "Drag sun icon to move light source");
 			stepper(1, 12, fx, "passes");
 			slider(0, 20, fx, "intensity");
@@ -63,10 +66,7 @@ package {
 			checkbox(this, "moveOcclusion");
 			checkbox(emission, "visible", "emission.visible");
 			checkbox(occlusion, "visible", "occlusion.visible");
-			new PushButton(box, 0, 0, "Re-center", function(e:Event):void {
-					emission.x = src.x = stage.stageWidth/2;
-					emission.y = src.y = stage.stageHeight/2;
-				})
+			new PushButton(box, 0, 0, "Re-center", recenter);
 			var sizeSlider:HUISlider = new HUISlider(box, 0, 0, "Buffer size", function(e:Event):void { 
 					fx.setBufferSize(sizeSlider.value);
 				});
@@ -75,9 +75,7 @@ package {
 			sizeSlider.maximum = 0x20000;
 			sizeSlider.value = 0x8000;
 
-			var stats:Stats = new Stats;
 			addChild(stats);
-			stats.x = stage.stageWidth - stats.width;
 
 			// light source icon
 			stage.addChild(src);
@@ -86,7 +84,16 @@ package {
 			src.addEventListener(MouseEvent.MOUSE_DOWN, function(e:Event):void { src.startDrag(); });
 			src.addEventListener(MouseEvent.MOUSE_UP, function(e:Event):void { src.stopDrag(); });
 
+			onResize(null);
+			emission.x = occlusion.x = stage.stageWidth/2;
+			emission.y = occlusion.y = stage.stageHeight/2;
+			stage.addEventListener(Event.RESIZE, onResize);
 			addEventListener("enterFrame", frame);
+		}
+
+		private function recenter(e:Event = null):void {
+			emission.x = src.x = stage.stageWidth/2;
+			emission.y = src.y = stage.stageHeight/2;
 		}
 
 		private function checkbox(obj:Object, prop:String, text:String = null):CheckBox {
@@ -120,10 +127,20 @@ package {
 			return comp;
 		}
 
+		private function onResize(e:Event):void {
+			var w:Number = stage.stageWidth;
+			var h:Number = stage.stageHeight;
+			fx.setViewportSize(w, h);
+			stats.x = stage.stageWidth - stats.width - 10;
+			stats.y = 10;
+			occlusion.y = stage.stageHeight/2;
+			recenter();
+		}
+
 		private function frame(e:*):void {
 			occlusion.rotation++;
-			var x:Number = 400 + 250 * Math.sin(getTimer()/1000);
-			occlusion.x = moveOcclusion ? x : 400;
+			var x:Number = stage.stageWidth/2 + 250 * Math.sin(getTimer()/1000);
+			occlusion.x = moveOcclusion ? x : stage.stageWidth/2;
 			fx.srcX = src.x;
 			fx.srcY = src.y;
 			if(attachEmissionToSrc) {
