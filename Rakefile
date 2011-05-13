@@ -8,25 +8,27 @@ VOLUMETRICS_CLASSES = VOLUMETRICS_SRC_FILES.map {|p| p[6..-4].gsub("/", ".")}
 
 SWC_TARGET = "./bin/Volumetrics.swc"
 
-EXAMPLES_LIB = [SWC_TARGET, "./examples/lib/MinimalComps.swc"]
-EXAMPLES_NAMES = ["EffectExplorer"]
-EXAMPLES_SRC_FILES = EXAMPLES_NAMES.map {|name| "./examples/#{name}.as"}
+EXAMPLES_LIBS = [SWC_TARGET, "./examples/lib/MinimalComps.swc"]
 
 MXMLC_OPTIONS = [
                  "-compiler.source-path ./examples ./src",
                  "-optimize",
-                 "-include-libraries #{EXAMPLES_LIB.join(" ")}",
+                 "-include-libraries #{EXAMPLES_LIBS.join(" ")}",
                 ]
 
 SWC_OPTIONS = [
                "-output #{SWC_TARGET}",
+               "-optimize",
                "-source-path ./src",
                "-include-classes #{VOLUMETRICS_CLASSES}",
               ]
 
-task :doc => VOLUMETRICS_SRC_FILES do
+file "./doc/index.html" => VOLUMETRICS_SRC_FILES do
   rm_r Dir.glob("./doc/*")
   sh "#{ASDOC} -output doc -source-path src -doc-sources src/org/zozuar/volumetrics/"
+end
+
+task :doc => "./doc/index.html" do
 end
 
 file SWC_TARGET => VOLUMETRICS_SRC_FILES do
@@ -36,13 +38,15 @@ end
 task :swc => [SWC_TARGET] do
 end
 
-task :examples => [SWC_TARGET] do
-  EXAMPLES_NAMES.each do|name|
-    sh "#{MXMLC} -output ./bin/#{name}.swf #{MXMLC_OPTIONS.join(" ")} -- ./examples/#{name}.as"
-  end
+file "./bin/EffectExplorer.swf" => ["./examples/EffectExplorer.as", SWC_TARGET] do
+  sh "#{MXMLC} -output ./bin/EffectExplorer.swf #{MXMLC_OPTIONS.join(" ")} -- ./examples/EffectExplorer.as"
+end
+
+task :examples => ["./bin/EffectExplorer.swf"] do
 end
 
 task :clean do
   rm_r Dir.glob("./doc/*")
-  rm Dir.glob("./bin/*")
+  rm Dir.glob("./bin/*.swf")
+  rm SWC_TARGET
 end
