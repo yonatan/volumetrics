@@ -54,3 +54,8 @@ task :clean do
   rm Dir.glob("./bin/*.swf")
   rm SWC_TARGET
 end
+
+task :all => [:swc, :examples, :doc] do
+end
+
+task :default => [:all]
