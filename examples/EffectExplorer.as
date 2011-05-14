@@ -42,7 +42,6 @@ package {
 			g.clear();
 			g.beginFill(0x101010);
 			for(var i:int = 0; i < 10; i++) {
-				//g.drawRect(-400/(i+1), -300/(i+1), 800/(i+1), 600/(i+1));
 				g.drawRect(-200/(i+1), -150/(i+1), 400/(i+1), 300/(i+1));
 			}
 			g.endFill();
@@ -53,8 +52,6 @@ package {
 			// ui
 			box = new VBox(this, 15, 15);
 			box.opaqueBackground = 0xe0e0e0;
-			//box.filters = [new GlowFilter(0, 1, 10, 10)];
-			//new FPSMeter(box);
 			new Label(box, 0, 0, "Drag sun icon to move light source");
 			stepper(1, 12, fx, "passes");
 			slider(0, 20, fx, "intensity");
