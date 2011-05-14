@@ -67,6 +67,7 @@ package org.zozuar.volumetrics {
 		protected var _bufferHeight:uint;
 		protected var _viewportWidth:uint;
 		protected var _viewportHeight:uint;
+		protected var _mtx:Matrix = new Matrix;
 
 		/**
 		* Creates a new effect container.
@@ -135,31 +136,43 @@ package org.zozuar.volumetrics {
 		public function render(e:Event = null):void {
 			var savedQuality:String = stage.quality;
 			if(rasterQuality) stage.quality = rasterQuality;
-			var m:Matrix = _emission.transform.matrix.clone();
-			m.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
-			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
-			_ct.redMultiplier = _ct.greenMultiplier = _ct.blueMultiplier = mul;
-			_baseBmd.fillRect(_baseBmd.rect, 0);
-			_baseBmd.draw(_emission, m, colorIntegrity ? null : _ct);
-			if(_occlusion) {
-				_occlusionLoResBmd.fillRect(_occlusionLoResBmd.rect, 0);
-				m = _occlusion.transform.matrix.clone();
-				m.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
-				_occlusionLoResBmd.draw(_occlusion, m);
-				_baseBmd.draw(_occlusionLoResBmp, null, null, BlendMode.ERASE);
-			}
+			_drawLoResEmission();
+			if(_occlusion) _eraseLoResOcclusion();
 			if(rasterQuality) stage.quality = savedQuality;
 			var s:Number = 1 + (scale-1) / (1 << passes);
 			var tx:Number = srcX/_viewportWidth*_bufferWidth;
 			var ty:Number = srcY/_viewportHeight*_bufferHeight;
-			m.identity();
-			m.translate(-tx, -ty);
-			m.scale(s, s);
-			m.translate(tx, ty);
-			_lightBmp.bitmapData = _applyEffect(_baseBmd, _bufferBmd, m, passes);
+			_mtx.identity();
+			_mtx.translate(-tx, -ty);
+			_mtx.scale(s, s);
+			_mtx.translate(tx, ty);
+			_lightBmp.bitmapData = _applyEffect(_baseBmd, _bufferBmd, _mtx, passes);
 			_lightBmp.width = _viewportWidth;
 			_lightBmp.height = _viewportHeight;
 			_lightBmp.smoothing = smoothing;
+		}
+
+		/**
+		* Draws a scaled-down emission on _baseBmd.
+		*/
+		protected function _drawLoResEmission():void {
+			_copyMatrix(_emission.transform.matrix, _mtx);
+			_mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
+			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
+			_ct.redMultiplier = _ct.greenMultiplier = _ct.blueMultiplier = mul;
+			_baseBmd.fillRect(_baseBmd.rect, 0);
+			_baseBmd.draw(_emission, _mtx, colorIntegrity ? null : _ct);
+		}
+
+		/**
+		* Draws a scaled-down occlusion on _occlusionLoResBmd and erases it from _baseBmd.
+		*/
+		protected function _eraseLoResOcclusion():void {
+			_occlusionLoResBmd.fillRect(_occlusionLoResBmd.rect, 0);
+			_copyMatrix(_occlusion.transform.matrix, _mtx);
+			_mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
+			_occlusionLoResBmd.draw(_occlusion, _mtx);
+			_baseBmd.draw(_occlusionLoResBmp, null, null, BlendMode.ERASE);
 		}
 
 		/**
@@ -178,7 +191,7 @@ package org.zozuar.volumetrics {
 
 		/**
 		* Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buffer
-		* bitmaps.
+		* bitmaps and it's mtx argument.
 		*
 		* @param src The BitmapData to apply the effect on.
 		* @param buffer Another BitmapData object for temporary storage. Must be the same size as src.
@@ -208,6 +221,15 @@ package org.zozuar.volumetrics {
 			if(_occlusionLoResBmd) _occlusionLoResBmd.dispose();
 			if(_bufferBmd) _bufferBmd.dispose();
 			_baseBmd = _occlusionLoResBmd = _bufferBmd = _lightBmp.bitmapData = null;
+		}
+
+		protected function _copyMatrix(src:Matrix, dst:Matrix):void {
+			dst.a = src.a;
+			dst.b = src.b;
+			dst.c = src.c;
+			dst.d = src.d;
+			dst.tx = src.tx;
+			dst.ty = src.ty;
 		}
     }
 }
