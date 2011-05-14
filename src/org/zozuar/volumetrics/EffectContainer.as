@@ -136,6 +136,8 @@ package org.zozuar.volumetrics {
 		public function render(e:Event = null):void {
 			var savedQuality:String = stage.quality;
 			if(rasterQuality) stage.quality = rasterQuality;
+			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
+			_ct.redMultiplier = _ct.greenMultiplier = _ct.blueMultiplier = mul;
 			_drawLoResEmission();
 			if(_occlusion) _eraseLoResOcclusion();
 			if(rasterQuality) stage.quality = savedQuality;
@@ -158,8 +160,6 @@ package org.zozuar.volumetrics {
 		protected function _drawLoResEmission():void {
 			_copyMatrix(_emission.transform.matrix, _mtx);
 			_mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
-			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
-			_ct.redMultiplier = _ct.greenMultiplier = _ct.blueMultiplier = mul;
 			_baseBmd.fillRect(_baseBmd.rect, 0);
 			_baseBmd.draw(_emission, _mtx, colorIntegrity ? null : _ct);
 		}

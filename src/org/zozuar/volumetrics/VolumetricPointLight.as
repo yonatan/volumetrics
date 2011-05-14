@@ -1,7 +1,6 @@
 package org.zozuar.volumetrics {
     import flash.display.*;
     import flash.events.*;
-    import flash.filters.*;
     import flash.geom.*;
 
 	/**
@@ -10,6 +9,8 @@ package org.zozuar.volumetrics {
 	* and it's radius is adjusted to the length of the viewport's diagonal, so if you
 	* set srcX and srcY to the viewport's center then only half of the gradient colors
 	* will be used.
+	*
+	* <p>This should also perform a little better than EffectContainer.</p>
 	*/
 	public class VolumetricPointLight extends EffectContainer {
 		protected var _colors:Array;
@@ -20,11 +21,15 @@ package org.zozuar.volumetrics {
 		protected var _gradientBmp:Bitmap = new Bitmap;
 		protected var _lastSrcX:Number;
 		protected var _lastSrcY:Number;
+		protected var _lastIntensity:Number;
+		protected var _lastColorIntegrity:Boolean = false;
+		protected var _gradientLoResBmd:BitmapData;
+		protected var _gradientLoResDirty:Boolean = true;
 
 		/**
 		* Creates a new effect container, with an emission created from the supplied color or gradient.
 		* The constructor lets you use a shortcut syntax for creating simple single-color gradients.
-		* @example The constructor lets you use a shortcut syntax for creating simple single-color gradients:
+		* @example The shortcut syntax:
 		* <listing>new VolumetricPointLight(800, 600, occlusion, 0xc08040);</listing>
 		* @example is equivalent to:
 		* <listing>new VolumetricPointLight(800, 600, occlusion, [0xc08040, 0], [1, 1], [0, 255]);</listing>
@@ -65,17 +70,44 @@ package org.zozuar.volumetrics {
 			_gradientBmp.bitmapData.draw(_gradient);
 		}
 
+		/**
+		* Updates the lo-res gradient bitmap if neccesary and copies it to _baseBmd.
+		*/
+		override protected function _drawLoResEmission():void {
+			if(_gradientLoResDirty) {
+				super._drawLoResEmission();
+				_gradientLoResBmd.copyPixels(_baseBmd, _baseBmd.rect, _baseBmd.rect.topLeft);
+				_gradientLoResDirty = false;
+			} else {
+				_baseBmd.copyPixels(_gradientLoResBmd, _baseBmd.rect, _baseBmd.rect.topLeft);
+			}
+		}
+
+		/** @inheritDoc */
+		override protected function _updateBuffers():void {
+			super._updateBuffers();
+			_gradientLoResBmd = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
+			_gradientLoResDirty = true;
+		}
+
 		/** @inheritDoc */
 		override public function setViewportSize(width:uint, height:uint):void {
 			super.setViewportSize(width, height);
 			_drawGradient();
+			_gradientLoResDirty = true;
 		}
 
 		/** @inheritDoc */
 		override public function render(e:Event = null):void {
-			if(_lastSrcX != srcX || _lastSrcY != srcY) _drawGradient();
+			var srcChanged:Boolean = _lastSrcX != srcX || _lastSrcY != srcY;
+			if(srcChanged) _drawGradient();
+			_gradientLoResDirty ||= srcChanged;
+			_gradientLoResDirty ||= (!colorIntegrity && (_lastIntensity != intensity));
+			_gradientLoResDirty ||= (_lastColorIntegrity != colorIntegrity);
 			_lastSrcX = srcX;
 			_lastSrcY = srcY;
+			_lastIntensity = intensity;
+			_lastColorIntegrity = colorIntegrity;
 			super.render(e);
 		}
 	}
