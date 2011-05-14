@@ -110,5 +110,12 @@ package org.zozuar.volumetrics {
 			_lastColorIntegrity = colorIntegrity;
 			super.render(e);
 		}
+
+		/** @inheritDoc */
+		override public function dispose():void {
+			super.dispose();
+			if(_gradientLoResBmd) _gradientLoResBmd.dispose();
+			_gradientLoResBmd = null;
+		}
 	}
 }
