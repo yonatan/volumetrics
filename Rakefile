@@ -23,28 +23,32 @@ SWC_OPTIONS = [
                "-include-classes #{VOLUMETRICS_CLASSES}",
               ]
 
+# doc
 file "./doc/index.html" => VOLUMETRICS_SRC_FILES do
   rm_r Dir.glob("./doc/*")
   sh "#{ASDOC} -output doc -source-path src -doc-sources src/org/zozuar/volumetrics/"
 end
-
 task :doc => "./doc/index.html" do
 end
 
+# swc
 file SWC_TARGET => VOLUMETRICS_SRC_FILES do
   sh "#{COMPC} #{SWC_OPTIONS.join(" ")}"
 end
-
 task :swc => [SWC_TARGET] do
 end
 
+# examples
 file "./bin/EffectExplorer.swf" => ["./examples/EffectExplorer.as", SWC_TARGET] do
   sh "#{MXMLC} -output ./bin/EffectExplorer.swf #{MXMLC_OPTIONS.join(" ")} -- ./examples/EffectExplorer.as"
 end
-
-task :examples => ["./bin/EffectExplorer.swf"] do
+file "./bin/PointLightDemo.swf" => ["./examples/PointLightDemo.as", SWC_TARGET] do
+  sh "#{MXMLC} -output ./bin/PointLightDemo.swf #{MXMLC_OPTIONS.join(" ")} -- ./examples/PointLightDemo.as"
+end
+task :examples => ["./bin/EffectExplorer.swf", "./bin/PointLightDemo.swf"] do
 end
 
+# clean
 task :clean do
   rm_r Dir.glob("./doc/*")
   rm Dir.glob("./bin/*.swf")
