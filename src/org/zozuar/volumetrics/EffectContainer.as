@@ -134,6 +134,7 @@ package org.zozuar.volumetrics {
 		* @param e In case you want to make this an event listener.
 		*/
 		public function render(e:Event = null):void {
+			if(!(_lightBmp.visible = intensity > 0)) return;
 			var savedQuality:String = stage.quality;
 			if(rasterQuality) stage.quality = rasterQuality;
 			var mul:Number = colorIntegrity ? intensity : intensity/(1<<passes);
