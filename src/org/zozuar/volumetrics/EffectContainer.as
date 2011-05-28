@@ -191,7 +191,7 @@ package org.zozuar.volumetrics {
 
 		/**
 		* Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buffer
-		* bitmaps and it's mtx argument.
+		* bitmaps and its mtx argument.
 		*
 		* @param src The BitmapData to apply the effect on.
 		* @param buffer Another BitmapData object for temporary storage. Must be the same size as src.
