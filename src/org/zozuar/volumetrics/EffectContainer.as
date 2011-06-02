@@ -198,7 +198,7 @@ package org.zozuar.volumetrics {
 		* @param buffer Another BitmapData object for temporary storage. Must be the same size as src.
 		* @param mtx Effect matrix.
 		* @param passes Number of passes to make.
-		* @return A processed BitmapData object (supllied in either src or buffer) with final effect output.
+		* @return A processed BitmapData object (supplied in either src or buffer) with final effect output.
 		*/
 		protected function _applyEffect(src:BitmapData, buffer:BitmapData, mtx:Matrix, passes:uint):BitmapData {
 			var tmp:BitmapData;
