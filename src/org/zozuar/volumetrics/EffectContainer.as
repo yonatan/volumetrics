@@ -76,8 +76,8 @@ package org.zozuar.volumetrics {
 		* @param height Viewport height in pixels.
 		* @param emission A DisplayObject to which the effect will be applied. This object will be
 		* added as a child of the container. When applying the effect the object's filters and color
-		* matrix is ignored, if you want to use filters or a color matrix put your content in another
-		* object and addChild it to this one instead.
+		* transform are ignored, if you want to use filters or a color transform put your content in
+		* another object and addChild it to this one instead.
 		* @param occlusion An optional occlusion object, handled the same way as the emission object.
 		*/
 		public function EffectContainer(width:uint, height:uint, emission:DisplayObject, occlusion:DisplayObject = null) {
