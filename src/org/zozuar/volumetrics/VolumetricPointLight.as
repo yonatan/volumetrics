@@ -47,8 +47,8 @@ package org.zozuar.volumetrics {
 		public function VolumetricPointLight(width:uint, height:uint, occlusion:DisplayObject, colorOrGradient:*, alphas:Array = null, ratios:Array = null) {
 			if(colorOrGradient is Array) {
 				_colors = colorOrGradient.concat();
-				if(!ratios)	_ratios = colorOrGradient.map(function(item:*, i:int, arr:Array):int { return 0x100*i/(colorOrGradient.length+i-1) });
-				if(!alphas) _alphas = _colors.map(function(..._):Number { return 1 });
+				_ratios = ratios || colorOrGradient.map(function(item:*, i:int, arr:Array):int { return 0x100*i/(colorOrGradient.length+i-1) });
+				_alphas = alphas || _colors.map(function(..._):Number { return 1 });
 			} else {
 				_colors = [colorOrGradient, 0];
 				_ratios = [0, 255];
