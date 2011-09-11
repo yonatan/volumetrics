@@ -21,7 +21,7 @@ package {
 			stage.scaleMode = "noScale";
 
 			// Create a VolumetricPointLight object, use the grid as the occlusion object.
-			fx = new VolumetricPointLight(800, 600, grid, [0xc08040, 0x4080c0, 0], [1, 1, 1], [0, 20, 30]);
+			fx = new VolumetricPointLight(800, 600, grid, [0xc08040, 0x4080c0, 0]);
 			// You can also specify a single color instead of gradient params, for example:
 			//   fx = new VolumetricPointLight(800, 600, grid, 0xc08040);
 			// is equivalent to:
