@@ -14,6 +14,7 @@ MXMLC_OPTIONS = [
                  "-compiler.source-path ./examples ./src",
                  "-optimize",
                  "-include-libraries #{EXAMPLES_LIBS.join(" ")}",
+                 "-static-link-runtime-shared-libraries",
                 ]
 
 SWC_OPTIONS = [
