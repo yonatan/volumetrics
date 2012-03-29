@@ -149,7 +149,8 @@ package org.zozuar.volumetrics {
 			_mtx.translate(-tx, -ty);
 			_mtx.scale(s, s);
 			_mtx.translate(tx, ty);
-			_lightBmp.bitmapData = _applyEffect(_baseBmd, _bufferBmd, _mtx, passes);
+            _applyEffect(_baseBmd, _bufferBmd, _mtx, passes);
+			_lightBmp.bitmapData = _baseBmd;
 			_lightBmp.width = _viewportWidth;
 			_lightBmp.height = _viewportHeight;
 			_lightBmp.smoothing = smoothing;
@@ -191,27 +192,23 @@ package org.zozuar.volumetrics {
 		}
 
 		/**
-		* Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the src and buffer
+		* Low-level workhorse, applies the lighting effect to a bitmap. This function modifies the bmd and buffer
 		* bitmaps and its mtx argument.
 		*
-		* @param src The BitmapData to apply the effect on.
-		* @param buffer Another BitmapData object for temporary storage. Must be the same size as src.
+		* @param bmd The BitmapData to apply the effect on.
+		* @param buffer Another BitmapData object for temporary storage. Must be the same size as bmd.
 		* @param mtx Effect matrix.
 		* @param passes Number of passes to make.
-		* @return A processed BitmapData object (supplied in either src or buffer) with final effect output.
 		*/
-		protected function _applyEffect(src:BitmapData, buffer:BitmapData, mtx:Matrix, passes:uint):BitmapData {
-			var tmp:BitmapData;
+		protected function _applyEffect(bmd:BitmapData, buffer:BitmapData, mtx:Matrix, passes:uint):void {
 			while(passes--) {
-				if(colorIntegrity) src.colorTransform(src.rect, _halve);
-				buffer.copyPixels(src, src.rect, src.rect.topLeft);
-				buffer.draw(src, mtx, null, BlendMode.ADD, null, true);
+				if(colorIntegrity) bmd.colorTransform(bmd.rect, _halve);
+				buffer.copyPixels(bmd, bmd.rect, bmd.rect.topLeft);
+				bmd.draw(buffer, mtx, null, BlendMode.ADD, null, true);
 				mtx.concat(mtx);
-				tmp = src; src = buffer; buffer = tmp;
 			}
-			if(colorIntegrity) src.colorTransform(src.rect, _ct);
-			if(blur) src.applyFilter(src, src.rect, src.rect.topLeft, _blurFilter);
-			return src;
+			if(colorIntegrity) bmd.colorTransform(bmd.rect, _ct);
+			if(blur) bmd.applyFilter(bmd, bmd.rect, bmd.rect.topLeft, _blurFilter);
 		}
 
 		/**
