@@ -1,79 +1,79 @@
 package {
-	import flash.display.*;
-	import flash.events.*;
-	import org.zozuar.volumetrics.*;
+    import flash.display.*;
+    import flash.events.*;
+    import org.zozuar.volumetrics.*;
 
-	[SWF(width="800", height="600", backgroundColor="0")]
-	public class PointLightDemo extends Sprite {
-		private var fx:VolumetricPointLight;
-		private var grid:Grid = new Grid;
-		private var sun:SunIcon = new SunIcon;
+    [SWF(width="800", height="600", backgroundColor="0")]
+    public class PointLightDemo extends Sprite {
+        private var fx:VolumetricPointLight;
+        private var grid:Grid = new Grid;
+        private var sun:SunIcon = new SunIcon;
 
-		public function PointLightDemo():void {
-			addEventListener(Event.ADDED_TO_STAGE, init);
-			if(null != stage) init();
-		}
+        public function PointLightDemo():void {
+            addEventListener(Event.ADDED_TO_STAGE, init);
+            if(null != stage) init();
+        }
 
-		private function init(e:Event = null):void {
-			removeEventListener(Event.ADDED_TO_STAGE, init);
-			stage.quality = "medium";
-			stage.align = "TL";
-			stage.scaleMode = "noScale";
+        private function init(e:Event = null):void {
+            removeEventListener(Event.ADDED_TO_STAGE, init);
+            stage.quality = "medium";
+            stage.align = "TL";
+            stage.scaleMode = "noScale";
 
-			// Create a VolumetricPointLight object, use the grid as the occlusion object.
-			fx = new VolumetricPointLight(800, 600, grid, [0xc08040, 0x4080c0, 0]);
-			// You can also specify a single color instead of gradient params, for example:
-			//   fx = new VolumetricPointLight(800, 600, grid, 0xc08040);
-			// is equivalent to:
-			//   fx = new VolumetricPointLight(800, 600, grid, [0xc08040, 0], [1, 1], [0, 255]);
+            // Create a VolumetricPointLight object, use the grid as the occlusion object.
+            fx = new VolumetricPointLight(800, 600, grid, [0xc08040, 0x4080c0, 0]);
+            // You can also specify a single color instead of gradient params, for example:
+            //   fx = new VolumetricPointLight(800, 600, grid, 0xc08040);
+            // is equivalent to:
+            //   fx = new VolumetricPointLight(800, 600, grid, [0xc08040, 0], [1, 1], [0, 255]);
 
-			addChild(fx);
-			// Render on every frame.
-			fx.startRendering();
+            addChild(fx);
+            // Render on every frame.
+            fx.startRendering();
 
-			// This is only required if you want your SWF to be resizeable...
-			onResize(null);
-			stage.addEventListener(Event.RESIZE, onResize);
+            // This is only required if you want your SWF to be resizeable...
+            onResize(null);
+            stage.addEventListener(Event.RESIZE, onResize);
 
-			// Sun icon used to control light source position
-			addChild(sun);
-			sun.buttonMode = true;
-			sun.addEventListener(MouseEvent.MOUSE_DOWN, function(e:Event):void { sun.startDrag(); });
-			sun.addEventListener(MouseEvent.MOUSE_UP, function(e:Event):void { sun.stopDrag(); });
-			addEventListener(Event.ENTER_FRAME, function(..._):void { fx.srcX = sun.x; fx.srcY = sun.y; });
-		}
+            // Sun icon used to control light source position
+            addChild(sun);
+            sun.buttonMode = true;
+            sun.addEventListener(MouseEvent.MOUSE_DOWN, function(e:Event):void { sun.startDrag(); });
+            sun.addEventListener(MouseEvent.MOUSE_UP, function(e:Event):void { sun.stopDrag(); });
+            addEventListener(Event.ENTER_FRAME, function(..._):void { fx.srcX = sun.x; fx.srcY = sun.y; });
+        }
 
-		private function onResize(e:Event):void {
-			var w:Number = stage.stageWidth;
-			var h:Number = stage.stageHeight;
-			fx.setViewportSize(w, h);
-			sun.x = fx.srcX = w/2;
-			sun.y = fx.srcY = h/2;
-			grid.x = w/2-232;
-			grid.y = h/2-232;
-		}
-	}
+        private function onResize(e:Event):void {
+            var w:Number = stage.stageWidth;
+            var h:Number = stage.stageHeight;
+            fx.setViewportSize(w, h);
+            sun.x = fx.srcX = w/2;
+            sun.y = fx.srcY = h/2;
+            grid.x = w/2-232;
+            grid.y = h/2-232;
+        }
+    }
 }
 
 import flash.display.*;
 import flash.filters.*;
 
 class SunIcon extends Sprite {
-	public function SunIcon() {
-		buttonMode = true;
-		graphics.beginFill(0, 0);
-		graphics.drawCircle(0, 0, 14);
-		graphics.endFill();
-		graphics.lineStyle(1, 0xffc040);
-		graphics.drawCircle(0, 0, 4);
-		filters = [new GlowFilter(0, 1, 4, 4, 8)];
-		for(var i:int = 0; i < 10; i++) {
-			var sin:Number = Math.sin(Math.PI*2*i/10);
-			var cos:Number = Math.cos(Math.PI*2*i/10);
-			graphics.moveTo(sin*7, cos*7);
-			graphics.lineTo(sin*12, cos*12);
-		}
-	}
+    public function SunIcon() {
+        buttonMode = true;
+        graphics.beginFill(0, 0);
+        graphics.drawCircle(0, 0, 14);
+        graphics.endFill();
+        graphics.lineStyle(1, 0xffc040);
+        graphics.drawCircle(0, 0, 4);
+        filters = [new GlowFilter(0, 1, 4, 4, 8)];
+        for(var i:int = 0; i < 10; i++) {
+            var sin:Number = Math.sin(Math.PI*2*i/10);
+            var cos:Number = Math.cos(Math.PI*2*i/10);
+            graphics.moveTo(sin*7, cos*7);
+            graphics.lineTo(sin*12, cos*12);
+        }
+    }
 }
 
 /**
@@ -101,57 +101,57 @@ class Grid extends Sprite
     private var spring:Number = 0.3
     private var friction:Number = 0.68;
     public function Grid():void {
-		if (stage) init();
-		else addEventListener(Event.ADDED_TO_STAGE, init);
-	}
-	private function init(e:Event = null):void {
-		removeEventListener(Event.ADDED_TO_STAGE, init);
-		// entry point
-		Arrays = []
-		SQ=[]
-		for (var i:int = 0; i < 6; i++ ) {
-			for (var j:int = 0; j < 6; j++ ) {
-				var _point:Points = new Points(95 * i, 95 * j);
-				Arrays.push(_point)
-				var test:Sprite = addChild(new Sprite()) as Sprite;
-				test.graphics.beginFill(0x101010);
-				test.graphics.drawCircle(0, 0, 20);
-				test.graphics.endFill();
-				SQ.push(test)
-			}
-		}
-		lines = addChild(new Sprite()) as Sprite;
-		addEventListener(Event.ENTER_FRAME, enter);
-	}
-	private function enter(e:Event):void {
-		var mousePoint:Point = new Point(mouseX, mouseY);
-		var i:int;
-		for each (var _point:Points in Arrays) {
-			_point.update(mousePoint,  Reaction, spring, friction);
-			SQ[i].x = _point.x;
-			SQ[i].y = _point.y
-			i++;
-		}
-		lines.graphics.clear();
-		lines.graphics.lineStyle (20, 0x101010, 1);
-		for (var n:int = 0; n < 36; n++ ) {
-			lines.graphics.beginFill(0x000000,Math.min(1,distance/350))
-			lines.graphics.moveTo(SQ[n].x, SQ[n].y);
-			var distance:Number = Point.distance(mousePoint, new Point(SQ[n].x+47, SQ[n].y+47));
-			if (n < 30) {
-				lines.graphics.lineTo( SQ[(n + 6)].x, SQ[n + 6].y);
-				if(n%6){
-					lines.graphics.lineTo( SQ[(n + 5 )].x, SQ[n + 5].y);
-					lines.graphics.lineTo( SQ[(n - 1 )].x, SQ[n - 1].y);
-				}
-				if(n==2||n==1){
-					lines.graphics.lineTo( SQ[(n-1)].x, SQ[n - 1].y);
-					lines.graphics.lineTo(SQ[n].x, SQ[n].y);
-				}
-			}
-		}
-		lines.graphics.endFill()
-	}
+        if (stage) init();
+        else addEventListener(Event.ADDED_TO_STAGE, init);
+    }
+    private function init(e:Event = null):void {
+        removeEventListener(Event.ADDED_TO_STAGE, init);
+        // entry point
+        Arrays = []
+        SQ=[]
+        for (var i:int = 0; i < 6; i++ ) {
+            for (var j:int = 0; j < 6; j++ ) {
+                var _point:Points = new Points(95 * i, 95 * j);
+                Arrays.push(_point)
+                var test:Sprite = addChild(new Sprite()) as Sprite;
+                test.graphics.beginFill(0x101010);
+                test.graphics.drawCircle(0, 0, 20);
+                test.graphics.endFill();
+                SQ.push(test)
+            }
+        }
+        lines = addChild(new Sprite()) as Sprite;
+        addEventListener(Event.ENTER_FRAME, enter);
+    }
+    private function enter(e:Event):void {
+        var mousePoint:Point = new Point(mouseX, mouseY);
+        var i:int;
+        for each (var _point:Points in Arrays) {
+            _point.update(mousePoint,  Reaction, spring, friction);
+            SQ[i].x = _point.x;
+            SQ[i].y = _point.y
+            i++;
+        }
+        lines.graphics.clear();
+        lines.graphics.lineStyle (20, 0x101010, 1);
+        for (var n:int = 0; n < 36; n++ ) {
+            lines.graphics.beginFill(0x000000,Math.min(1,distance/350))
+            lines.graphics.moveTo(SQ[n].x, SQ[n].y);
+            var distance:Number = Point.distance(mousePoint, new Point(SQ[n].x+47, SQ[n].y+47));
+            if (n < 30) {
+                lines.graphics.lineTo( SQ[(n + 6)].x, SQ[n + 6].y);
+                if(n%6){
+                    lines.graphics.lineTo( SQ[(n + 5 )].x, SQ[n + 5].y);
+                    lines.graphics.lineTo( SQ[(n - 1 )].x, SQ[n - 1].y);
+                }
+                if(n==2||n==1){
+                    lines.graphics.lineTo( SQ[(n-1)].x, SQ[n - 1].y);
+                    lines.graphics.lineTo(SQ[n].x, SQ[n].y);
+                }
+            }
+        }
+        lines.graphics.endFill()
+    }
 
 }
 
@@ -170,7 +170,7 @@ class Points {
     }
     public function update(mousePoint:Point, Reaction:uint, spring:Number, friction:Number):void {
         var dx:Number;
-		var dy:Number;
+        var dy:Number;
         var distance:Number = Point.distance(mousePoint, new Point(localX, localY));
         if (distance < Reaction) {
             var diff:Number     = distance * -1 * (Reaction - distance) / Reaction;
