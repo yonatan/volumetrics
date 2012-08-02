@@ -65,9 +65,11 @@ package org.zozuar.volumetrics {
         protected var _bufferSize:uint = 0x8000;
         protected var _bufferWidth:uint;
         protected var _bufferHeight:uint;
+        protected var _bufferRect:Rectangle = new Rectangle;
         protected var _viewportWidth:uint;
         protected var _viewportHeight:uint;
         protected var _mtx:Matrix = new Matrix;
+        protected var _zero:Point = new Point;
 
         /**
         * Creates a new effect container.
@@ -126,6 +128,8 @@ package org.zozuar.volumetrics {
             _bufferBmd         = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
             _occlusionLoResBmd = new BitmapData(_bufferWidth, _bufferHeight, true, 0);
             _occlusionLoResBmp = new Bitmap(_occlusionLoResBmd);
+            _bufferRect.height = _bufferHeight;
+            _bufferRect.width  = _bufferWidth;
         }
 
         /**
@@ -149,7 +153,7 @@ package org.zozuar.volumetrics {
             _mtx.translate(-tx, -ty);
             _mtx.scale(s, s);
             _mtx.translate(tx, ty);
-            _applyEffect(_baseBmd, _bufferBmd, _mtx, passes);
+            _applyEffect(_baseBmd, _bufferRect, _bufferBmd, _mtx, passes);
             _lightBmp.bitmapData = _baseBmd;
             _lightBmp.width = _viewportWidth;
             _lightBmp.height = _viewportHeight;
@@ -162,7 +166,7 @@ package org.zozuar.volumetrics {
         protected function _drawLoResEmission():void {
             _copyMatrix(_emission.transform.matrix, _mtx);
             _mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
-            _baseBmd.fillRect(_baseBmd.rect, 0);
+            _baseBmd.fillRect(_bufferRect, 0);
             _baseBmd.draw(_emission, _mtx, colorIntegrity ? null : _ct);
         }
 
@@ -170,7 +174,7 @@ package org.zozuar.volumetrics {
         * Draws a scaled-down occlusion on _occlusionLoResBmd and erases it from _baseBmd.
         */
         protected function _eraseLoResOcclusion():void {
-            _occlusionLoResBmd.fillRect(_occlusionLoResBmd.rect, 0);
+            _occlusionLoResBmd.fillRect(_bufferRect, 0);
             _copyMatrix(_occlusion.transform.matrix, _mtx);
             _mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
             _occlusionLoResBmd.draw(_occlusion, _mtx);
@@ -196,19 +200,20 @@ package org.zozuar.volumetrics {
         * bitmaps and its mtx argument.
         *
         * @param bmd The BitmapData to apply the effect on.
+        * @param rect BitmapData rectangle.
         * @param buffer Another BitmapData object for temporary storage. Must be the same size as bmd.
         * @param mtx Effect matrix.
         * @param passes Number of passes to make.
         */
-        protected function _applyEffect(bmd:BitmapData, buffer:BitmapData, mtx:Matrix, passes:uint):void {
+        protected function _applyEffect(bmd:BitmapData, rect:Rectangle, buffer:BitmapData, mtx:Matrix, passes:uint):void {
             while(passes--) {
-                if(colorIntegrity) bmd.colorTransform(bmd.rect, _halve);
-                buffer.copyPixels(bmd, bmd.rect, bmd.rect.topLeft);
+                if(colorIntegrity) bmd.colorTransform(rect, _halve);
+                buffer.copyPixels(bmd, rect, _zero);
                 bmd.draw(buffer, mtx, null, BlendMode.ADD, null, true);
                 mtx.concat(mtx);
             }
-            if(colorIntegrity) bmd.colorTransform(bmd.rect, _ct);
-            if(blur) bmd.applyFilter(bmd, bmd.rect, bmd.rect.topLeft, _blurFilter);
+            if(colorIntegrity) bmd.colorTransform(rect, _ct);
+            if(blur) bmd.applyFilter(bmd, rect, _zero, _blurFilter);
         }
 
         /**
