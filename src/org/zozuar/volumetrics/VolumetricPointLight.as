@@ -76,17 +76,17 @@ package org.zozuar.volumetrics {
         override protected function _drawLoResEmission():void {
             if(_gradientLoResDirty) {
                 super._drawLoResEmission();
-                _gradientLoResBmd.copyPixels(_baseBmd, _baseBmd.rect, _baseBmd.rect.topLeft);
+                _gradientLoResBmd.copyPixels(_baseBmd, _bufferRect, _zero);
                 _gradientLoResDirty = false;
             } else {
-                _baseBmd.copyPixels(_gradientLoResBmd, _baseBmd.rect, _baseBmd.rect.topLeft);
+                _baseBmd.copyPixels(_gradientLoResBmd, _bufferRect, _zero);
             }
         }
 
         /** @inheritDoc */
         override protected function _updateBuffers():void {
             super._updateBuffers();
-            _gradientLoResBmd = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
+            _gradientLoResBmd = new BitmapData(_bufferRect.width, _bufferRect.height, false, 0);
             _gradientLoResDirty = true;
         }
 

@@ -63,8 +63,6 @@ package org.zozuar.volumetrics {
         protected var _bufferBmd:BitmapData;
         protected var _lightBmp:Bitmap = new Bitmap;
         protected var _bufferSize:uint = 0x8000;
-        protected var _bufferWidth:uint;
-        protected var _bufferHeight:uint;
         protected var _bufferRect:Rectangle = new Rectangle;
         protected var _viewportWidth:uint;
         protected var _viewportHeight:uint;
@@ -121,15 +119,13 @@ package org.zozuar.volumetrics {
 
         protected function _updateBuffers():void {
             var aspect:Number = _viewportWidth / _viewportHeight;
-            _bufferHeight = Math.max(1, Math.sqrt(_bufferSize / aspect));
-            _bufferWidth  = Math.max(1, _bufferHeight * aspect);
+            _bufferRect.height = int(Math.max(1, Math.sqrt(_bufferSize / aspect)));
+            _bufferRect.width  = int(Math.max(1, _bufferRect.height * aspect));
             dispose();
-            _baseBmd           = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
-            _bufferBmd         = new BitmapData(_bufferWidth, _bufferHeight, false, 0);
-            _occlusionLoResBmd = new BitmapData(_bufferWidth, _bufferHeight, true, 0);
+            _baseBmd           = new BitmapData(_bufferRect.width, _bufferRect.height, false, 0);
+            _bufferBmd         = new BitmapData(_bufferRect.width, _bufferRect.height, false, 0);
+            _occlusionLoResBmd = new BitmapData(_bufferRect.width, _bufferRect.height, true, 0);
             _occlusionLoResBmp = new Bitmap(_occlusionLoResBmd);
-            _bufferRect.height = _bufferHeight;
-            _bufferRect.width  = _bufferWidth;
         }
 
         /**
@@ -147,8 +143,8 @@ package org.zozuar.volumetrics {
             if(_occlusion) _eraseLoResOcclusion();
             if(rasterQuality) stage.quality = savedQuality;
             var s:Number = 1 + (scale-1) / (1 << passes);
-            var tx:Number = srcX/_viewportWidth*_bufferWidth;
-            var ty:Number = srcY/_viewportHeight*_bufferHeight;
+            var tx:Number = srcX/_viewportWidth*_bufferRect.width;
+            var ty:Number = srcY/_viewportHeight*_bufferRect.height;
             _mtx.identity();
             _mtx.translate(-tx, -ty);
             _mtx.scale(s, s);
@@ -165,7 +161,7 @@ package org.zozuar.volumetrics {
         */
         protected function _drawLoResEmission():void {
             _copyMatrix(_emission.transform.matrix, _mtx);
-            _mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
+            _mtx.scale(_bufferRect.width / _viewportWidth, _bufferRect.height / _viewportHeight);
             _baseBmd.fillRect(_bufferRect, 0);
             _baseBmd.draw(_emission, _mtx, colorIntegrity ? null : _ct);
         }
@@ -176,7 +172,7 @@ package org.zozuar.volumetrics {
         protected function _eraseLoResOcclusion():void {
             _occlusionLoResBmd.fillRect(_bufferRect, 0);
             _copyMatrix(_occlusion.transform.matrix, _mtx);
-            _mtx.scale(_bufferWidth / _viewportWidth, _bufferHeight / _viewportHeight);
+            _mtx.scale(_bufferRect.width / _viewportWidth, _bufferRect.height / _viewportHeight);
             _occlusionLoResBmd.draw(_occlusion, _mtx);
             _baseBmd.draw(_occlusionLoResBmp, null, null, BlendMode.ERASE);
         }
